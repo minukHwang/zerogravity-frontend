@@ -1,0 +1,27 @@
+name: Sync from Upstream
+
+on:
+  repository_dispatch:
+    types: [sync-from-upstream]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current branch
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.client_payload.branch }}
+
+      - name: Configure Git
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Sync with upstream
+        run: |
+          git remote add upstream https://github.com/zerogravity-project/zerogravity-frontend.git
+          git fetch upstream
+          git checkout ${{ github.event.client_payload.branch }}
+          git merge upstream/${{ github.event.client_payload.branch }} --ff-only
+          git push origin ${{ github.event.client_payload.branch }}
